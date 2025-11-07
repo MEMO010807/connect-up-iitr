@@ -221,13 +221,17 @@ const ProfileSetup = () => {
                   <SelectValue placeholder="Select your branch" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CSE">Computer Science & Engineering</SelectItem>
-                  <SelectItem value="EE">Electrical Engineering</SelectItem>
-                  <SelectItem value="ME">Mechanical Engineering</SelectItem>
-                  <SelectItem value="CE">Civil Engineering</SelectItem>
-                  <SelectItem value="CHE">Chemical Engineering</SelectItem>
-                  <SelectItem value="MME">Metallurgical & Materials Engineering</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
+                  <SelectItem value="Chemical Engineering">Chemical Engineering</SelectItem>
+                  <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
+                  <SelectItem value="Computer Science and Engineering">Computer Science and Engineering</SelectItem>
+                  <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
+                  <SelectItem value="Engineering Physics">Engineering Physics</SelectItem>
+                  <SelectItem value="Artificial Intelligence and Data Engineering">Artificial Intelligence and Data Engineering</SelectItem>
+                  <SelectItem value="Mathematics and Computing">Mathematics and Computing</SelectItem>
+                  <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
+                  <SelectItem value="Metallurgical and Materials Engineering">Metallurgical and Materials Engineering</SelectItem>
+                  <SelectItem value="Digital Agriculture">Digital Agriculture</SelectItem>
+                  <SelectItem value="Electrical Engineering (Integrated Circuit Design and Technology)">Electrical Engineering (Integrated Circuit Design and Technology)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -143,7 +143,7 @@ const Explore = () => {
   const hasMoreProfiles = currentIndex < profiles.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5 p-6 has-custom-cursor">
       <CustomCursor />
       <ThemeToggle />
       

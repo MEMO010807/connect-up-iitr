@@ -12,7 +12,7 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background has-custom-cursor">
       <CustomCursor />
       <ThemeToggle />
       

@@ -195,7 +195,7 @@ const Chat = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-background to-primary/5">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-background to-primary/5 has-custom-cursor">
       <CustomCursor />
       <ThemeToggle />
       

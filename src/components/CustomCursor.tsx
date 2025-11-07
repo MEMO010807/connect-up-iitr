@@ -6,7 +6,6 @@ const CustomCursor = () => {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
 
   useEffect(() => {
-    document.body.classList.add('has-custom-cursor');
     let particleId = 0;
 
     const updateCursor = (e: MouseEvent) => {
@@ -49,7 +48,6 @@ const CustomCursor = () => {
     return () => {
       window.removeEventListener('mousemove', updateCursor);
       window.removeEventListener('mouseover', handleMouseOver);
-      document.body.classList.remove('has-custom-cursor');
     };
   }, []);
 

@@ -64,6 +64,11 @@ const Chat = () => {
     }
 
     if (user) {
+      // Request notification permission
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      
       fetchMatches();
       setupCallSignaling();
     }
@@ -185,7 +190,27 @@ const Chat = () => {
         },
         (payload) => {
           if (payload.new.receiver_id === user.id) {
-            setMessages(prev => [...prev, payload.new as Message]);
+            const newMsg = payload.new as Message;
+            setMessages(prev => [...prev, newMsg]);
+            
+            // Show notifications for new messages
+            const sender = matches.find(m => m.id === newMsg.sender_id);
+            const senderName = sender?.name || 'Someone';
+            
+            // Show toast notification
+            toast.success(`New message from ${senderName}`, {
+              description: newMsg.content,
+              duration: 4000,
+            });
+            
+            // Show desktop notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(`New message from ${senderName}`, {
+                body: newMsg.content,
+                icon: sender?.profile_picture_url || '/placeholder.svg',
+                tag: `message-${newMsg.id}`,
+              });
+            }
           }
         }
       )
@@ -211,6 +236,30 @@ const Chat = () => {
             name: payload.fromName,
             channelName: payload.channelName
           });
+          
+          // Show toast notification
+          toast.success(`Incoming video call from ${payload.fromName}`, {
+            description: 'Click to answer',
+            duration: 10000,
+          });
+          
+          // Show desktop notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const match = matches.find(m => m.id === payload.from);
+            const notification = new Notification(`Incoming video call from ${payload.fromName}`, {
+              body: 'Click to answer',
+              icon: match?.profile_picture_url || '/placeholder.svg',
+              tag: `call-${payload.from}`,
+              requireInteraction: true,
+            });
+            
+            // Allow clicking notification to accept call
+            notification.onclick = () => {
+              window.focus();
+              acceptCall();
+              notification.close();
+            };
+          }
         }
       })
       .subscribe();

@@ -122,8 +122,19 @@ All colors MUST be HSL.
 }
 
 /* Custom Cursor Styles */
-* {
+body, body * {
   cursor: none !important;
+}
+
+/* Restore normal cursor for form elements */
+input, textarea, select, 
+input *, textarea *, select * {
+  cursor: text !important;
+}
+
+button, a, [role="button"],
+button *, a *, [role="button"] * {
+  cursor: pointer !important;
 }
 
 .custom-cursor {

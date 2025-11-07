@@ -5,12 +5,17 @@ import heroImage from "@/assets/hero-indian-students.jpg";
 import featureMatching from "@/assets/feature-matching.jpg";
 import featureChat from "@/assets/feature-chat.jpg";
 import featureCommunity from "@/assets/feature-community.jpg";
+import CustomCursor from "@/components/CustomCursor";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
+      <CustomCursor />
+      <ThemeToggle />
+      
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -44,7 +49,7 @@ const Landing = () => {
             <Button 
               size="lg" 
               onClick={() => navigate('/auth')}
-              className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all"
+              className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all cursor-hover hover-glow"
             >
               Get Started
             </Button>
@@ -58,17 +63,17 @@ const Landing = () => {
           <h2 className="text-4xl font-bold text-center mb-16">Why ConnectUp?</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="group relative overflow-hidden rounded-2xl bg-card hover:shadow-2xl transition-all duration-300">
+            <div className="group interactive-card cursor-hover relative overflow-hidden rounded-2xl bg-card hover:shadow-2xl transition-all duration-300">
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src={featureMatching} 
                   alt="Smart matching for students"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
               </div>
               <div className="p-8 relative z-10 -mt-20">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 shadow-lg hover-rotate">
                   <Heart className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Smart Matching</h3>
@@ -78,17 +83,17 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-2xl bg-card hover:shadow-2xl transition-all duration-300">
+            <div className="group interactive-card cursor-hover relative overflow-hidden rounded-2xl bg-card hover:shadow-2xl transition-all duration-300">
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src={featureChat} 
                   alt="Real-time chat with matches"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
               </div>
               <div className="p-8 relative z-10 -mt-20">
-                <div className="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 shadow-lg hover-rotate">
                   <MessageCircle className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Real-Time Chat</h3>
@@ -98,17 +103,17 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-2xl bg-card hover:shadow-2xl transition-all duration-300">
+            <div className="group interactive-card cursor-hover relative overflow-hidden rounded-2xl bg-card hover:shadow-2xl transition-all duration-300">
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src={featureCommunity} 
                   alt="Campus community at IIT Ropar"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-all duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
               </div>
               <div className="p-8 relative z-10 -mt-20">
-                <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg hover-rotate">
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Campus Community</h3>
@@ -137,7 +142,7 @@ const Landing = () => {
             size="lg" 
             variant="secondary"
             onClick={() => navigate('/auth')}
-            className="text-lg px-12 py-6 rounded-full shadow-xl hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90"
+            className="text-lg px-12 py-6 rounded-full shadow-xl hover:scale-110 transition-all bg-white text-primary hover:bg-white/90 cursor-hover hover-glow"
           >
             Join Now
           </Button>

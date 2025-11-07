@@ -31,14 +31,40 @@ const Explore = () => {
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-      return;
-    }
+    const run = async () => {
+      if (!authLoading && !user) {
+        navigate('/auth');
+        return;
+      }
 
-    if (user) {
-      fetchProfiles();
-    }
+      if (user) {
+        try {
+          // Ensure the current user has a profile row; if not, redirect to setup
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          if (!data) {
+            toast.error('Please complete your profile first');
+            navigate('/profile-setup');
+            setLoading(false);
+            return;
+          }
+
+          await fetchProfiles();
+        } catch (err) {
+          console.error(err);
+          toast.error('Failed to check profile');
+          setLoading(false);
+        }
+      }
+    };
+
+    run();
   }, [user, authLoading, navigate]);
 
   const fetchProfiles = async () => {
@@ -67,7 +93,7 @@ const Explore = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setProfiles(data || []);
+      setProfiles((data || []).filter((p) => p.id !== user.id));
     } catch (error: any) {
       toast.error('Failed to load profiles');
       console.error(error);

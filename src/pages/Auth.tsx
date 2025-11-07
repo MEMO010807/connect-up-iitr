@@ -86,7 +86,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background via-background to-primary/5">
       <ThemeToggle />
       
-      <Card className="w-full max-w-md shadow-2xl interactive-card">
+      <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Heart className="w-8 h-8 text-primary" />

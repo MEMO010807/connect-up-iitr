@@ -27,6 +27,9 @@ const ProfileSetup = () => {
     bio: '',
     hobbies: [] as string[],
     profile_picture_url: '',
+    security_answer_1: '',
+    security_answer_2: '',
+    security_answer_3: '',
   });
   
   const [hobbyInput, setHobbyInput] = useState('');
@@ -63,6 +66,9 @@ const ProfileSetup = () => {
           bio: data.bio || '',
           hobbies: data.hobbies || [],
           profile_picture_url: data.profile_picture_url || '',
+          security_answer_1: data.security_answer_1 || '',
+          security_answer_2: data.security_answer_2 || '',
+          security_answer_3: data.security_answer_3 || '',
         });
       }
     } catch (error: any) {
@@ -116,8 +122,8 @@ const ProfileSetup = () => {
     e.preventDefault();
     if (!user) return;
 
-    if (!profile.name || !profile.branch || !profile.year) {
-      toast.error('Please fill in all required fields');
+    if (!profile.name || !profile.branch || !profile.year || !profile.security_answer_1 || !profile.security_answer_2 || !profile.security_answer_3) {
+      toast.error('Please fill in all required fields including security questions');
       return;
     }
 
@@ -133,6 +139,12 @@ const ProfileSetup = () => {
           bio: profile.bio,
           hobbies: profile.hobbies,
           profile_picture_url: profile.profile_picture_url,
+          security_question_1: 'What is your favourite food?',
+          security_answer_1: profile.security_answer_1.toLowerCase().trim(),
+          security_question_2: 'What was your childhood name?',
+          security_answer_2: profile.security_answer_2.toLowerCase().trim(),
+          security_question_3: 'Which is your favourite colour?',
+          security_answer_3: profile.security_answer_3.toLowerCase().trim(),
           updated_at: new Date().toISOString(),
         });
 
@@ -295,6 +307,50 @@ const ProfileSetup = () => {
                     </button>
                   </Badge>
                 ))}
+              </div>
+            </div>
+
+            {/* Security Questions */}
+            <div className="space-y-4 pt-4 border-t">
+              <Label className="text-lg font-semibold">Security Questions *</Label>
+              <p className="text-sm text-muted-foreground">
+                These questions will be used to verify your identity when changing your password
+              </p>
+              
+              <div className="space-y-2">
+                <Label htmlFor="security1">What is your favourite food? *</Label>
+                <Input
+                  id="security1"
+                  type="text"
+                  value={profile.security_answer_1}
+                  onChange={(e) => setProfile({ ...profile, security_answer_1: e.target.value })}
+                  placeholder="e.g., Pizza"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="security2">What was your childhood name? *</Label>
+                <Input
+                  id="security2"
+                  type="text"
+                  value={profile.security_answer_2}
+                  onChange={(e) => setProfile({ ...profile, security_answer_2: e.target.value })}
+                  placeholder="e.g., Chotu"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="security3">Which is your favourite colour? *</Label>
+                <Input
+                  id="security3"
+                  type="text"
+                  value={profile.security_answer_3}
+                  onChange={(e) => setProfile({ ...profile, security_answer_3: e.target.value })}
+                  placeholder="e.g., Blue"
+                  required
+                />
               </div>
             </div>
 

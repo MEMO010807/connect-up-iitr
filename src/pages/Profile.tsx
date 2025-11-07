@@ -7,9 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Edit, LogOut, Trash2, Heart, MessageCircle, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { Loader2, Edit, LogOut, Trash2, Heart, MessageCircle, User as UserIcon, ArrowLeft, KeyRound } from 'lucide-react';
 import CustomCursor from '@/components/CustomCursor';
 import ThemeToggle from '@/components/ThemeToggle';
+import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +39,7 @@ const Profile = () => {
   const [matchCount, setMatchCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -224,6 +226,15 @@ const Profile = () => {
                 Sign Out
               </Button>
 
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => setChangePasswordOpen(true)}
+              >
+                <KeyRound className="w-4 h-4 mr-2" />
+                Change Password
+              </Button>
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button 
@@ -257,6 +268,14 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {user && (
+          <ChangePasswordDialog 
+            open={changePasswordOpen}
+            onOpenChange={setChangePasswordOpen}
+            userId={user.id}
+          />
+        )}
       </div>
     </div>
   );

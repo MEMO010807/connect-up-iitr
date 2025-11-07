@@ -13,6 +13,7 @@ import { X, Upload, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CustomCursor from '@/components/CustomCursor';
 import ThemeToggle from '@/components/ThemeToggle';
+import { profileSchema, hobbySchema } from '@/lib/validation';
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -27,9 +28,6 @@ const ProfileSetup = () => {
     bio: '',
     hobbies: [] as string[],
     profile_picture_url: '',
-    security_answer_1: '',
-    security_answer_2: '',
-    security_answer_3: '',
   });
   
   const [hobbyInput, setHobbyInput] = useState('');
@@ -66,9 +64,6 @@ const ProfileSetup = () => {
           bio: data.bio || '',
           hobbies: data.hobbies || [],
           profile_picture_url: data.profile_picture_url || '',
-          security_answer_1: data.security_answer_1 || '',
-          security_answer_2: data.security_answer_2 || '',
-          security_answer_3: data.security_answer_3 || '',
         });
       }
     } catch (error: any) {
@@ -108,10 +103,31 @@ const ProfileSetup = () => {
   };
 
   const addHobby = () => {
-    if (hobbyInput.trim() && !profile.hobbies.includes(hobbyInput.trim())) {
-      setProfile({ ...profile, hobbies: [...profile.hobbies, hobbyInput.trim()] });
-      setHobbyInput('');
+    const trimmedHobby = hobbyInput.trim();
+    
+    if (!trimmedHobby) return;
+    
+    // Validate hobby
+    const hobbyValidation = hobbySchema.safeParse(trimmedHobby);
+    if (!hobbyValidation.success) {
+      toast.error(hobbyValidation.error.errors[0].message);
+      return;
     }
+    
+    // Check if hobby already exists
+    if (profile.hobbies.includes(trimmedHobby)) {
+      toast.error('This hobby is already added');
+      return;
+    }
+    
+    // Check max hobbies limit
+    if (profile.hobbies.length >= 20) {
+      toast.error('You can add up to 20 hobbies');
+      return;
+    }
+    
+    setProfile({ ...profile, hobbies: [...profile.hobbies, trimmedHobby] });
+    setHobbyInput('');
   };
 
   const removeHobby = (hobby: string) => {
@@ -122,8 +138,21 @@ const ProfileSetup = () => {
     e.preventDefault();
     if (!user) return;
 
-    if (!profile.name || !profile.branch || !profile.year || !profile.security_answer_1 || !profile.security_answer_2 || !profile.security_answer_3) {
-      toast.error('Please fill in all required fields including security questions');
+    // Validate required fields
+    if (!profile.name || !profile.branch || !profile.year) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate profile data
+    const validation = profileSchema.safeParse({
+      name: profile.name,
+      bio: profile.bio,
+      hobbies: profile.hobbies,
+    });
+
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
 
@@ -133,18 +162,12 @@ const ProfileSetup = () => {
         .from('profiles')
         .upsert({
           id: user.id,
-          name: profile.name,
+          name: profile.name.trim(),
           branch: profile.branch,
           year: profile.year,
-          bio: profile.bio,
+          bio: profile.bio.trim(),
           hobbies: profile.hobbies,
           profile_picture_url: profile.profile_picture_url,
-          security_question_1: 'What is your favourite food?',
-          security_answer_1: profile.security_answer_1.toLowerCase().trim(),
-          security_question_2: 'What was your childhood name?',
-          security_answer_2: profile.security_answer_2.toLowerCase().trim(),
-          security_question_3: 'Which is your favourite colour?',
-          security_answer_3: profile.security_answer_3.toLowerCase().trim(),
           updated_at: new Date().toISOString(),
         });
 
@@ -307,50 +330,6 @@ const ProfileSetup = () => {
                     </button>
                   </Badge>
                 ))}
-              </div>
-            </div>
-
-            {/* Security Questions */}
-            <div className="space-y-4 pt-4 border-t">
-              <Label className="text-lg font-semibold">Security Questions *</Label>
-              <p className="text-sm text-muted-foreground">
-                These questions will be used to verify your identity when changing your password
-              </p>
-              
-              <div className="space-y-2">
-                <Label htmlFor="security1">What is your favourite food? *</Label>
-                <Input
-                  id="security1"
-                  type="text"
-                  value={profile.security_answer_1}
-                  onChange={(e) => setProfile({ ...profile, security_answer_1: e.target.value })}
-                  placeholder="e.g., Pizza"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="security2">What was your childhood name? *</Label>
-                <Input
-                  id="security2"
-                  type="text"
-                  value={profile.security_answer_2}
-                  onChange={(e) => setProfile({ ...profile, security_answer_2: e.target.value })}
-                  placeholder="e.g., Chotu"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="security3">Which is your favourite colour? *</Label>
-                <Input
-                  id="security3"
-                  type="text"
-                  value={profile.security_answer_3}
-                  onChange={(e) => setProfile({ ...profile, security_answer_3: e.target.value })}
-                  placeholder="e.g., Blue"
-                  required
-                />
               </div>
             </div>
 

@@ -179,12 +179,6 @@ export type Database = {
           id: string
           name: string
           profile_picture_url: string | null
-          security_answer_1: string | null
-          security_answer_2: string | null
-          security_answer_3: string | null
-          security_question_1: string | null
-          security_question_2: string | null
-          security_question_3: string | null
           updated_at: string | null
           year: number
         }
@@ -196,12 +190,6 @@ export type Database = {
           id: string
           name: string
           profile_picture_url?: string | null
-          security_answer_1?: string | null
-          security_answer_2?: string | null
-          security_answer_3?: string | null
-          security_question_1?: string | null
-          security_question_2?: string | null
-          security_question_3?: string | null
           updated_at?: string | null
           year: number
         }
@@ -213,12 +201,6 @@ export type Database = {
           id?: string
           name?: string
           profile_picture_url?: string | null
-          security_answer_1?: string | null
-          security_answer_2?: string | null
-          security_answer_3?: string | null
-          security_question_1?: string | null
-          security_question_2?: string | null
-          security_question_3?: string | null
           updated_at?: string | null
           year?: number
         }

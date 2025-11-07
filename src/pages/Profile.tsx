@@ -269,13 +269,10 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {user && (
-          <ChangePasswordDialog 
-            open={changePasswordOpen}
-            onOpenChange={setChangePasswordOpen}
-            userId={user.id}
-          />
-        )}
+        <ChangePasswordDialog 
+          open={changePasswordOpen}
+          onOpenChange={setChangePasswordOpen}
+        />
       </div>
     </div>
   );

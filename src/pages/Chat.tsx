@@ -14,6 +14,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import VideoCall from '@/components/VideoCall';
 import { MessageNotification } from '@/components/MessageNotification';
+import { messageSchema } from '@/lib/validation';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -373,6 +374,13 @@ const Chat = () => {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedMatch || !user || sending) return;
+
+    // Validate message
+    const validation = messageSchema.safeParse({ content: newMessage.trim() });
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
 
     setSending(true);
     try {

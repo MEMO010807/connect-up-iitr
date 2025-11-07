@@ -20,7 +20,7 @@ const ThemeToggle = () => {
       variant="outline"
       size="icon"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="fixed top-6 right-6 z-50 rounded-full w-12 h-12 cursor-hover shadow-lg hover:shadow-xl transition-all hover:scale-110"
+      className="fixed bottom-6 left-6 z-50 rounded-full w-12 h-12 cursor-hover shadow-lg hover:shadow-xl transition-all hover:scale-110"
     >
       {theme === 'dark' ? (
         <Sun className="h-5 w-5 transition-transform rotate-0 scale-100" />

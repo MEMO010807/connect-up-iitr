@@ -8,11 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Send, ArrowLeft, User as UserIcon, Smile, VideoIcon, PhoneIncoming, PhoneOff } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, User as UserIcon, Smile, VideoIcon, PhoneIncoming, PhoneOff, Check, CheckCheck } from 'lucide-react';
 import CustomCursor from '@/components/CustomCursor';
 import ThemeToggle from '@/components/ThemeToggle';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import VideoCall from '@/components/VideoCall';
+import { MessageNotification } from '@/components/MessageNotification';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,14 @@ interface Message {
   receiver_id: string;
   content: string;
   created_at: string;
+  read_at?: string;
+}
+
+interface NotificationMessage {
+  id: string;
+  senderName: string;
+  senderAvatar?: string;
+  message: string;
 }
 
 const Chat = () => {
@@ -53,6 +62,7 @@ const Chat = () => {
   const [isInitiator, setIsInitiator] = useState(false);
   const [callChannelName, setCallChannelName] = useState('');
   const [incomingCall, setIncomingCall] = useState<{from: string, name: string, channelName: string} | null>(null);
+  const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const callSignalChannelRef = useRef<any>(null);
@@ -84,6 +94,7 @@ const Chat = () => {
     if (selectedMatch && user) {
       fetchMessages(selectedMatch.id);
       subscribeToMessages(selectedMatch.id);
+      markMessagesAsRead(selectedMatch.id);
     }
   }, [selectedMatch, user]);
 
@@ -175,6 +186,21 @@ const Chat = () => {
     }
   };
 
+  const markMessagesAsRead = async (matchId: string) => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('sender_id', matchId)
+        .eq('receiver_id', user.id)
+        .is('read_at', null);
+    } catch (error: any) {
+      console.error('Failed to mark messages as read:', error);
+    }
+  };
+
   const subscribeToMessages = (matchId: string) => {
     if (!user) return;
 
@@ -197,6 +223,14 @@ const Chat = () => {
             const sender = matches.find(m => m.id === newMsg.sender_id);
             const senderName = sender?.name || 'Someone';
             
+            // Show popup notification
+            setNotifications(prev => [...prev, {
+              id: newMsg.id,
+              senderName,
+              senderAvatar: sender?.profile_picture_url,
+              message: newMsg.content,
+            }]);
+            
             // Show toast notification
             toast.success(`New message from ${senderName}`, {
               description: newMsg.content,
@@ -211,7 +245,27 @@ const Chat = () => {
                 tag: `message-${newMsg.id}`,
               });
             }
+            
+            // Auto-mark as read if currently viewing this chat
+            if (selectedMatch?.id === matchId) {
+              markMessagesAsRead(matchId);
+            }
           }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          // Update message read status in real-time
+          const updatedMsg = payload.new as Message;
+          setMessages(prev => prev.map(msg => 
+            msg.id === updatedMsg.id ? updatedMsg : msg
+          ));
         }
       )
       .subscribe();
@@ -488,12 +542,21 @@ const Chat = () => {
                         }`}
                       >
                         <p>{message.content}</p>
-                        <p className="text-xs opacity-70 mt-1">
-                          {new Date(message.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
+                        <div className="flex items-center justify-end gap-1 text-xs opacity-70 mt-1">
+                          <span>
+                            {new Date(message.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          {message.sender_id === user?.id && (
+                            message.read_at ? (
+                              <CheckCheck className="w-3 h-3 text-blue-500" />
+                            ) : (
+                              <CheckCheck className="w-3 h-3 text-muted-foreground" />
+                            )
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -549,6 +612,17 @@ const Chat = () => {
           )}
         </div>
       </div>
+      
+      {/* Message Notifications */}
+      {notifications.map((notification) => (
+        <MessageNotification
+          key={notification.id}
+          senderName={notification.senderName}
+          senderAvatar={notification.senderAvatar}
+          message={notification.message}
+          onClose={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
+        />
+      ))}
     </div>
   );
 };

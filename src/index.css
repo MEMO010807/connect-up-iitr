@@ -121,19 +121,19 @@ All colors MUST be HSL.
   }
 }
 
-/* Custom Cursor Styles */
-body, body * {
+/* Custom Cursor Styles (scoped) */
+.has-custom-cursor, .has-custom-cursor * {
   cursor: none !important;
 }
 
-/* Restore normal cursor for form elements */
-input, textarea, select, 
-input *, textarea *, select * {
+/* Restore normal cursor for form elements when scoped */
+.has-custom-cursor input, .has-custom-cursor textarea, .has-custom-cursor select,
+.has-custom-cursor input *, .has-custom-cursor textarea *, .has-custom-cursor select * {
   cursor: text !important;
 }
 
-button, a, [role="button"],
-button *, a *, [role="button"] * {
+.has-custom-cursor button, .has-custom-cursor a, .has-custom-cursor [role="button"],
+.has-custom-cursor button *, .has-custom-cursor a *, .has-custom-cursor [role="button"] * {
   cursor: pointer !important;
 }
 

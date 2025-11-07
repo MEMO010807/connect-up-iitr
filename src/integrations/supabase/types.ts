@@ -42,10 +42,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "likes_liked_id_fkey"
+            columns: ["liked_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "likes_liker_id_fkey"
             columns: ["liker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "likes_liker_id_fkey"
+            columns: ["liker_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -78,10 +92,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matches_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_user2_id_fkey"
             columns: ["user2_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -120,10 +148,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -184,7 +226,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          bio: string | null
+          branch: string | null
+          created_at: string | null
+          hobbies: string[] | null
+          id: string | null
+          name: string | null
+          profile_picture_url: string | null
+          updated_at: string | null
+          year: number | null
+        }
+        Insert: {
+          bio?: string | null
+          branch?: string | null
+          created_at?: string | null
+          hobbies?: string[] | null
+          id?: string | null
+          name?: string | null
+          profile_picture_url?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          bio?: string | null
+          branch?: string | null
+          created_at?: string | null
+          hobbies?: string[] | null
+          id?: string | null
+          name?: string | null
+          profile_picture_url?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

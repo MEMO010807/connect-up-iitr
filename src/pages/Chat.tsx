@@ -8,10 +8,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Send, ArrowLeft, User as UserIcon, Smile } from 'lucide-react';
+import { Loader2, Send, ArrowLeft, User as UserIcon, Smile, VideoIcon, PhoneIncoming, PhoneOff } from 'lucide-react';
 import CustomCursor from '@/components/CustomCursor';
 import ThemeToggle from '@/components/ThemeToggle';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import VideoCall from '@/components/VideoCall';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Match {
   id: string;
@@ -38,8 +49,13 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [inCall, setInCall] = useState(false);
+  const [isInitiator, setIsInitiator] = useState(false);
+  const [callChannelName, setCallChannelName] = useState('');
+  const [incomingCall, setIncomingCall] = useState<{from: string, name: string, channelName: string} | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const callSignalChannelRef = useRef<any>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,7 +65,14 @@ const Chat = () => {
 
     if (user) {
       fetchMatches();
+      setupCallSignaling();
     }
+
+    return () => {
+      if (callSignalChannelRef.current) {
+        supabase.removeChannel(callSignalChannelRef.current);
+      }
+    };
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
@@ -173,6 +196,73 @@ const Chat = () => {
     };
   };
 
+  const setupCallSignaling = () => {
+    if (!user) return;
+
+    const channel = supabase.channel(`call-signals-${user.id}`);
+    callSignalChannelRef.current = channel;
+
+    channel
+      .on('broadcast', { event: 'call-request' }, ({ payload }) => {
+        console.log('Received call request:', payload);
+        if (payload.to === user.id) {
+          setIncomingCall({
+            from: payload.from,
+            name: payload.fromName,
+            channelName: payload.channelName
+          });
+        }
+      })
+      .subscribe();
+  };
+
+  const initiateCall = () => {
+    if (!selectedMatch || !user) return;
+    
+    const channelName = `call-${user.id}-${selectedMatch.id}-${Date.now()}`;
+    setCallChannelName(channelName);
+    setIsInitiator(true);
+
+    // Send call request
+    const channel = supabase.channel(`call-signals-${selectedMatch.id}`);
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.send({
+          type: 'broadcast',
+          event: 'call-request',
+          payload: {
+            from: user.id,
+            fromName: matches.find(m => m.id === user.id)?.name || 'User',
+            to: selectedMatch.id,
+            channelName: channelName
+          }
+        });
+        
+        setInCall(true);
+        setTimeout(() => supabase.removeChannel(channel), 1000);
+      }
+    });
+  };
+
+  const acceptCall = () => {
+    if (!incomingCall) return;
+    
+    setCallChannelName(incomingCall.channelName);
+    setIsInitiator(false);
+    setInCall(true);
+    setIncomingCall(null);
+  };
+
+  const rejectCall = () => {
+    setIncomingCall(null);
+  };
+
+  const endCall = () => {
+    setInCall(false);
+    setCallChannelName('');
+    setIsInitiator(false);
+  };
+
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setNewMessage(prev => prev + emojiData.emoji);
     setShowEmojiPicker(false);
@@ -218,20 +308,65 @@ const Chat = () => {
     );
   }
 
+  if (inCall && selectedMatch && user) {
+    return (
+      <VideoCall
+        matchId={selectedMatch.id}
+        matchName={selectedMatch.name}
+        userId={user.id}
+        onEndCall={endCall}
+        isInitiator={isInitiator}
+        channelName={callChannelName}
+      />
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-background to-primary/5 has-custom-cursor">
       <CustomCursor />
       <ThemeToggle />
       
+      {/* Incoming Call Dialog */}
+      <AlertDialog open={!!incomingCall} onOpenChange={(open) => !open && rejectCall()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <PhoneIncoming className="w-5 h-5" />
+              Incoming Video Call
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {incomingCall?.name} is calling you...
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={rejectCall}>
+              <PhoneOff className="w-4 h-4 mr-2" />
+              Decline
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={acceptCall}>
+              <VideoIcon className="w-4 h-4 mr-2" />
+              Accept
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
       {/* Header */}
       <div className="border-b bg-card p-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/explore')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">
-            {selectedMatch ? selectedMatch.name : 'Messages'}
-          </h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/explore')}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">
+              {selectedMatch ? selectedMatch.name : 'Messages'}
+            </h1>
+          </div>
+          {selectedMatch && (
+            <Button variant="outline" size="icon" onClick={initiateCall}>
+              <VideoIcon className="w-5 h-5" />
+            </Button>
+          )}
         </div>
       </div>
 

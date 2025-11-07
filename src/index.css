@@ -136,6 +136,12 @@ All colors MUST be HSL.
   z-index: 9999;
   transition: transform 0.2s ease;
   box-shadow: 0 0 20px hsl(var(--primary) / 0.6);
+  border: 2px solid hsl(var(--background));
+}
+
+.dark .custom-cursor {
+  border: 2px solid hsl(var(--foreground) / 0.3);
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.8), 0 0 10px hsl(var(--foreground) / 0.5);
 }
 
 .cursor-aura {
@@ -143,12 +149,17 @@ All colors MUST be HSL.
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid hsl(var(--primary) / 0.3);
+  border: 2px solid hsl(var(--primary) / 0.5);
   pointer-events: none;
   z-index: 9998;
   transform: translate(-50%, -50%);
   transition: all 0.15s ease-out;
   animation: pulse-aura 2s infinite;
+}
+
+.dark .cursor-aura {
+  border: 2px solid hsl(var(--primary) / 0.7);
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
 }
 
 .cursor-particle {

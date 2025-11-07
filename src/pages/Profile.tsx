@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Edit, LogOut, Trash2, Heart, MessageCircle, User as UserIcon, ArrowLeft, KeyRound } from 'lucide-react';
+import { Loader2, Edit, LogOut, Trash2, Heart, MessageCircle, User as UserIcon, ArrowLeft, KeyRound, Shield } from 'lucide-react';
 import CustomCursor from '@/components/CustomCursor';
 import ThemeToggle from '@/components/ThemeToggle';
 import ChangePasswordDialog from '@/components/ChangePasswordDialog';
@@ -208,6 +208,15 @@ const Profile = () => {
 
             {/* Actions */}
             <div className="space-y-3 pt-4">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => navigate('/admin')}
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Dashboard
+              </Button>
+
               <Button 
                 className="w-full" 
                 variant="outline"

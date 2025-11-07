@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Mic, MicOff, Video, VideoOff, PhoneOff } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, PhoneOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -35,23 +35,36 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
 
   const initializeCall = async () => {
     try {
+      console.log('Initializing video call...');
+      
       // Get local media stream
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
       });
+      
+      console.log('Got local stream:', stream.getTracks().map(t => t.kind));
       
       localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
 
-      // Create peer connection
+      // Create peer connection with TURN servers for better connectivity
       const configuration = {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' }
+        ],
+        iceCandidatePoolSize: 10
       };
       
       const pc = new RTCPeerConnection(configuration);
@@ -59,15 +72,27 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
 
       // Add local stream to peer connection
       stream.getTracks().forEach(track => {
-        pc.addTrack(track, stream);
+        const sender = pc.addTrack(track, stream);
+        console.log('Added local track:', track.kind, sender);
       });
 
       // Handle remote stream
       pc.ontrack = (event) => {
-        console.log('Received remote track');
-        if (remoteVideoRef.current && event.streams[0]) {
-          remoteVideoRef.current.srcObject = event.streams[0];
+        console.log('Received remote track:', event.track.kind, event.streams);
+        if (remoteVideoRef.current) {
+          const remoteStream = event.streams[0];
+          console.log('Setting remote stream with tracks:', remoteStream.getTracks().map(t => t.kind));
+          remoteVideoRef.current.srcObject = remoteStream;
+          
+          // Force play after a brief delay
+          setTimeout(() => {
+            remoteVideoRef.current?.play().catch(e => 
+              console.error('Error playing remote video:', e)
+            );
+          }, 100);
+          
           setCallState('connected');
+          toast.success('Call connected!');
         }
       };
 
@@ -98,6 +123,7 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
       // Handle ICE candidates
       pc.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('Sending ICE candidate:', event.candidate.candidate);
           channel.send({
             type: 'broadcast',
             event: 'ice-candidate',
@@ -107,6 +133,21 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
               to: matchId
             }
           });
+        } else {
+          console.log('ICE gathering complete');
+        }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+          setCallState('connected');
+          toast.success('Video call connected');
+        } else if (pc.iceConnectionState === 'failed') {
+          setCallState('failed');
+          toast.error('Connection failed. Please check your network.');
+        } else if (pc.iceConnectionState === 'disconnected') {
+          toast.warning('Connection lost. Reconnecting...');
         }
       };
 
@@ -114,16 +155,25 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
         console.log('Connection state:', pc.connectionState);
         if (pc.connectionState === 'connected') {
           setCallState('connected');
-        } else if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+        } else if (pc.connectionState === 'failed') {
           setCallState('failed');
           toast.error('Connection failed');
         }
       };
 
+      pc.onsignalingstatechange = () => {
+        console.log('Signaling state:', pc.signalingState);
+      };
+
       // If initiator, create and send offer
       if (isInitiator) {
-        const offer = await pc.createOffer();
+        console.log('Creating offer as initiator');
+        const offer = await pc.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: true
+        });
         await pc.setLocalDescription(offer);
+        console.log('Sending offer');
         
         channel.send({
           type: 'broadcast',
@@ -144,12 +194,19 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
 
   const handleOffer = async (offer: RTCSessionDescriptionInit) => {
     try {
+      console.log('Handling offer');
       const pc = peerConnectionRef.current;
-      if (!pc) return;
+      if (!pc) {
+        console.error('No peer connection');
+        return;
+      }
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      console.log('Remote description set');
+      
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
+      console.log('Sending answer');
 
       channelRef.current?.send({
         type: 'broadcast',
@@ -162,25 +219,36 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
       });
     } catch (error) {
       console.error('Error handling offer:', error);
+      toast.error('Failed to handle call offer');
     }
   };
 
   const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
     try {
+      console.log('Handling answer');
       const pc = peerConnectionRef.current;
-      if (!pc) return;
+      if (!pc) {
+        console.error('No peer connection');
+        return;
+      }
       
       await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      console.log('Remote description set from answer');
     } catch (error) {
       console.error('Error handling answer:', error);
+      toast.error('Failed to handle call answer');
     }
   };
 
   const handleIceCandidate = async (candidate: RTCIceCandidateInit) => {
     try {
       const pc = peerConnectionRef.current;
-      if (!pc) return;
+      if (!pc) {
+        console.error('No peer connection for ICE candidate');
+        return;
+      }
       
+      console.log('Adding ICE candidate:', candidate.candidate);
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (error) {
       console.error('Error handling ICE candidate:', error);
@@ -255,8 +323,18 @@ const VideoCall = ({ matchId, matchName, userId, onEndCall, isInitiator, channel
             ref={remoteVideoRef}
             autoPlay
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover bg-gray-900"
           />
+          
+          {/* Connection indicator */}
+          {callState === 'connecting' && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <div className="text-center text-white">
+                <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
+                <p className="text-lg">Connecting...</p>
+              </div>
+            </div>
+          )}
           
           {/* Local video (picture-in-picture) */}
           <div className="absolute top-4 right-4 w-32 h-48 md:w-48 md:h-64 rounded-lg overflow-hidden border-2 border-white shadow-lg">

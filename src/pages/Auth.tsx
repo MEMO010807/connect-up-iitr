@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import { Heart } from 'lucide-react';
-import CustomCursor from '@/components/CustomCursor';
 import ThemeToggle from '@/components/ThemeToggle';
 
 const Auth = () => {
@@ -85,10 +84,9 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background via-background to-primary/5">
-      <CustomCursor />
       <ThemeToggle />
       
-      <Card className="w-full max-w-md shadow-2xl cursor-hover interactive-card">
+      <Card className="w-full max-w-md shadow-2xl interactive-card">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Heart className="w-8 h-8 text-primary" />
@@ -128,7 +126,7 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full cursor-hover hover-glow" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
@@ -169,7 +167,7 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full cursor-hover hover-glow" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>

@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Heart, X, Loader2, MessageCircle, User as UserIcon, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CustomCursor from '@/components/CustomCursor';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface Profile {
   id: string;
@@ -142,6 +144,9 @@ const Explore = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5 p-6">
+      <CustomCursor />
+      <ThemeToggle />
+      
       {/* Header */}
       <div className="max-w-md mx-auto mb-6">
         <div className="flex items-center justify-between">

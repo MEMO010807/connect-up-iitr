@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { X, Upload, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import CustomCursor from '@/components/CustomCursor';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -156,6 +158,9 @@ const ProfileSetup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background via-background to-secondary/5">
+      <CustomCursor />
+      <ThemeToggle />
+      
       <Card className="w-full max-w-2xl shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl">Complete Your Profile</CardTitle>

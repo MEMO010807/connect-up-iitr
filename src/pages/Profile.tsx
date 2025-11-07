@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Edit, LogOut, Trash2, Heart, MessageCircle, User as UserIcon, ArrowLeft } from 'lucide-react';
+import CustomCursor from '@/components/CustomCursor';
+import ThemeToggle from '@/components/ThemeToggle';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -142,6 +144,9 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5 p-6">
+      <CustomCursor />
+      <ThemeToggle />
+      
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

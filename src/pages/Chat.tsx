@@ -9,6 +9,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Send, ArrowLeft, User as UserIcon } from 'lucide-react';
+import CustomCursor from '@/components/CustomCursor';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface Match {
   id: string;
@@ -194,6 +196,9 @@ const Chat = () => {
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-background to-primary/5">
+      <CustomCursor />
+      <ThemeToggle />
+      
       {/* Header */}
       <div className="border-b bg-card p-4">
         <div className="flex items-center gap-4">

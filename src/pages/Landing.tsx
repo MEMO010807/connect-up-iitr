@@ -45,14 +45,6 @@ const Landing = () => {
             >
               Get Started
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate('/auth')}
-              className="text-lg px-8 py-6 rounded-full"
-            >
-              Sign In
-            </Button>
           </div>
         </div>
       </section>

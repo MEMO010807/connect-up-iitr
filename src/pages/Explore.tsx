@@ -82,7 +82,7 @@ const Explore = () => {
       const likedIds = likedProfiles?.map(l => l.liked_id) || [];
 
       let query = supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('*')
         .neq('id', user.id);
 

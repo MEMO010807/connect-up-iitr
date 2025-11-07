@@ -55,11 +55,16 @@ const Explore = () => {
 
       const likedIds = likedProfiles?.map(l => l.liked_id) || [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('profiles')
         .select('*')
-        .neq('id', user.id)
-        .not('id', 'in', `(${likedIds.join(',') || 'null'})`);
+        .neq('id', user.id);
+
+      if (likedIds.length > 0) {
+        query = query.not('id', 'in', `(${likedIds.join(',')})`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setProfiles(data || []);

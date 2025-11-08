@@ -1,73 +1,73 @@
-# Welcome to your Lovable project
+Here is a complete report-style README.md file for your GitHub repository.
 
-## Project info
+This is written in Markdown. You can copy and paste this text directly into a file named README.md in your project folder, and GitHub will display it beautifully.
 
-**URL**: https://lovable.dev/projects/1d413aec-8c81-4ca4-a2f5-84789d450926
+🚀 ConnectUp
+Swipe. Match. Connect. Make new friends at IIT Ropar!
+📝 Introduction
+ConnectUp is a Tinder-inspired social networking application designed specifically for the IIT Ropar campus community. The primary goal is to help students, especially first-years, discover and connect with peers who share similar interests, hobbies, and goals in a friendly, non-dating-focused environment.
 
-## How can I edit this code?
+This project provides a modern, responsive, and real-time platform for making new friends and strengthening the campus community.
 
-There are several ways of editing your application.
+✨ How It Works: Features & Technology
+This application is built as a modern, full-stack app, but with a "Backend-as-a-Service" model which allows for rapid development and powerful features out-of-the-box.
 
-**Use Lovable**
+1. Technology Stack
+Frontend: Vite + React (TypeScript)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1d413aec-8c81-4ca4-a2f5-84789d450926) and start prompting.
+Styling: Tailwind CSS & shadcn/ui
 
-Changes made via Lovable will be committed automatically to this repo.
+Backend & Database: Supabase
 
-**Use your preferred IDE**
+2. Core Features (The "Working" Part)
+Real-time Authentication: Secure, instant user signup and login handled by Supabase Auth.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Cloud Database: All user data, profiles, and messages are stored in a Supabase (Postgres) cloud database.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Profile Setup: Users can create and update their profiles with essential details like their name, branch, year, a personal bio, and hobbies.
 
-Follow these steps:
+Real-time Chat: Once users are matched, they can engage in real-time chat, powered by Supabase Realtime subscriptions. This functionality also supports read receipts and typing indicators.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Real-time Video Chat: Matched users can initiate real-time video calls, built using WebRTC and managed through Supabase's realtime channels.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+🚀 How to Boot It Up (Procedure)
+To get this project running locally on your machine, you will need to connect it to your own free Supabase project.
 
-# Step 3: Install the necessary dependencies.
-npm i
+Step 1: Clone the Repository
+First, clone this repo to your local machine:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Bash
+
+git clone <your-github-repo-url>
+cd connect-up-iitr-main
+Step 2: Install Dependencies
+Install all the required packages using npm:
+
+Bash
+
+npm install
+Step 3: Set Up Your Supabase Backend
+This is the most important step. The project needs to connect to a Supabase backend to store data.
+
+Go to supabase.com and sign up.
+
+Create a New Project.
+
+After your project is created, go to Project Settings > API.
+
+You will find your Project URL and your anon (public) key.
+
+Step 4: Create the .env File
+In the root of your project folder, create a new file named .env.
+
+Copy and paste the keys from Step 3 into this file. It must look exactly like this:
+
+VITE_SUPABASE_URL=https_://<your-project-id>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-long-publishable-key>
+Step 5: Run the Project
+Now you are ready to start the app!
+
+Bash
+
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/1d413aec-8c81-4ca4-a2f5-84789d450926) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This will launch the website on a local server (usually http://localhost:5173). You can now open this URL in your browser, and the app will be fully functional, saving all its data to your new Supabase project.

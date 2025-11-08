@@ -187,26 +187,30 @@ const Admin = () => {
 
       if (profilesError) throw profilesError;
 
-      // Fetch all user roles
+      // Fetch all user roles - force fresh data
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
 
       if (rolesError) throw rolesError;
 
+      console.log('Fetched roles:', rolesData);
+
       // Get auth users (we need to do this via a query to profiles which has user IDs)
       const usersWithRoles: UserWithRole[] = profilesData.map((profile) => {
-        const userRole = rolesData.find(r => r.user_id === profile.id);
+        const hasAdminRole = rolesData?.some(r => r.user_id === profile.id && r.role === 'admin');
+        console.log(`User ${profile.name} (${profile.id}): isAdmin = ${hasAdminRole}`);
         return {
           id: profile.id,
           email: '', // We'll need to get this from auth metadata if needed
-          isAdmin: userRole?.role === 'admin',
+          isAdmin: hasAdminRole || false,
           profile: {
             name: profile.name
           }
         };
       });
 
+      console.log('Users with roles:', usersWithRoles);
       setUsers(usersWithRoles);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -215,8 +219,11 @@ const Admin = () => {
 
   const toggleAdminRole = async (userId: string, currentlyAdmin: boolean) => {
     try {
+      console.log(`Toggling admin for user ${userId}, currently admin: ${currentlyAdmin}`);
+      
       if (currentlyAdmin) {
         // Remove admin role
+        console.log('Removing admin role...');
         const { error } = await supabase
           .from('user_roles')
           .delete()
@@ -224,25 +231,42 @@ const Admin = () => {
           .eq('role', 'admin');
 
         if (error) throw error;
+        console.log('Admin role removed successfully');
         toast.success('Admin role revoked');
       } else {
-        // Add admin role using upsert to handle duplicates
-        const { error } = await supabase
+        // Check if role already exists first
+        const { data: existingRole } = await supabase
           .from('user_roles')
-          .upsert(
-            { user_id: userId, role: 'admin' },
-            { onConflict: 'user_id,role', ignoreDuplicates: true }
-          );
+          .select('*')
+          .eq('user_id', userId)
+          .eq('role', 'admin')
+          .maybeSingle();
 
-        if (error) throw error;
-        toast.success('Admin role granted');
+        if (existingRole) {
+          console.log('Admin role already exists');
+          toast.success('User already has admin role');
+        } else {
+          // Add admin role
+          console.log('Adding admin role...');
+          const { error } = await supabase
+            .from('user_roles')
+            .insert({ user_id: userId, role: 'admin' });
+
+          if (error) throw error;
+          console.log('Admin role added successfully');
+          toast.success('Admin role granted');
+        }
       }
 
-      await fetchUsers();
-      setUserToToggle(null);
+      // Force refresh with a small delay to ensure database update is complete
+      setTimeout(async () => {
+        await fetchUsers();
+        setUserToToggle(null);
+      }, 500);
     } catch (error: any) {
       console.error('Error toggling admin role:', error);
       toast.error(error.message || 'Failed to update admin role');
+      setUserToToggle(null);
     }
   };
 

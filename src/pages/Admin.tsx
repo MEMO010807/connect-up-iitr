@@ -8,9 +8,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, ArrowLeft, Search, RefreshCw } from 'lucide-react';
+import { Loader2, ArrowLeft, Search, RefreshCw, Shield, ShieldOff, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -47,6 +57,15 @@ interface Like {
   created_at: string;
 }
 
+interface UserWithRole {
+  id: string;
+  email: string;
+  isAdmin: boolean;
+  profile?: {
+    name: string;
+  };
+}
+
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -55,18 +74,50 @@ const Admin = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [likes, setLikes] = useState<Like[]>([]);
+  const [users, setUsers] = useState<UserWithRole[]>([]);
   
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('profiles');
+  const [userToToggle, setUserToToggle] = useState<UserWithRole | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
     } else if (user) {
-      fetchAllData();
+      checkAdminStatus();
     }
   }, [user, authLoading, navigate]);
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    
+    setCheckingAdmin(true);
+    try {
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
+
+      if (error) throw error;
+
+      if (data) {
+        setIsAdmin(true);
+        fetchAllData();
+      } else {
+        toast.error('Access denied. Admin privileges required.');
+        navigate('/profile');
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      toast.error('Failed to verify admin status');
+      navigate('/profile');
+    } finally {
+      setCheckingAdmin(false);
+    }
+  };
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -75,7 +126,8 @@ const Admin = () => {
         fetchProfiles(),
         fetchMatches(),
         fetchMessages(),
-        fetchLikes()
+        fetchLikes(),
+        fetchUsers()
       ]);
       toast.success('Data loaded successfully');
     } catch (error) {
@@ -126,16 +178,104 @@ const Admin = () => {
     setLikes(data || []);
   };
 
+  const fetchUsers = async () => {
+    try {
+      // Fetch all profiles with their user info
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name');
+
+      if (profilesError) throw profilesError;
+
+      // Fetch all user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      // Get auth users (we need to do this via a query to profiles which has user IDs)
+      const usersWithRoles: UserWithRole[] = profilesData.map((profile) => {
+        const userRole = rolesData.find(r => r.user_id === profile.id);
+        return {
+          id: profile.id,
+          email: '', // We'll need to get this from auth metadata if needed
+          isAdmin: userRole?.role === 'admin',
+          profile: {
+            name: profile.name
+          }
+        };
+      });
+
+      setUsers(usersWithRoles);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const toggleAdminRole = async (userId: string, currentlyAdmin: boolean) => {
+    try {
+      if (currentlyAdmin) {
+        // Remove admin role
+        const { error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId)
+          .eq('role', 'admin');
+
+        if (error) throw error;
+        toast.success('Admin role revoked');
+      } else {
+        // Add admin role
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: 'admin' });
+
+        if (error) throw error;
+        toast.success('Admin role granted');
+      }
+
+      await fetchUsers();
+      setUserToToggle(null);
+    } catch (error: any) {
+      console.error('Error toggling admin role:', error);
+      toast.error(error.message || 'Failed to update admin role');
+    }
+  };
+
   const filteredProfiles = profiles.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.branch.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (authLoading || loading) {
+  if (authLoading || checkingAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              You do not have admin privileges to access this page.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate('/profile')} className="w-full">
+              Return to Profile
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -179,7 +319,7 @@ const Admin = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-5 w-full">
                 <TabsTrigger value="profiles">
                   Profiles <Badge variant="secondary" className="ml-2">{profiles.length}</Badge>
                 </TabsTrigger>
@@ -191,6 +331,9 @@ const Admin = () => {
                 </TabsTrigger>
                 <TabsTrigger value="likes">
                   Likes <Badge variant="secondary" className="ml-2">{likes.length}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="users">
+                  Users <Badge variant="secondary" className="ml-2">{users.length}</Badge>
                 </TabsTrigger>
               </TabsList>
 
@@ -319,9 +462,94 @@ const Admin = () => {
                   </Table>
                 </div>
               </TabsContent>
+
+              <TabsContent value="users" className="mt-6">
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>User ID</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((userItem) => (
+                        <TableRow key={userItem.id}>
+                          <TableCell className="font-medium">
+                            {userItem.profile?.name || 'Unknown'}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {userItem.id.slice(0, 8)}...
+                          </TableCell>
+                          <TableCell>
+                            {userItem.isAdmin ? (
+                              <Badge variant="default" className="gap-1">
+                                <Shield className="h-3 w-3" />
+                                Admin
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">User</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {userItem.id !== user?.id && (
+                              <Button
+                                variant={userItem.isAdmin ? "destructive" : "default"}
+                                size="sm"
+                                onClick={() => setUserToToggle(userItem)}
+                              >
+                                {userItem.isAdmin ? (
+                                  <>
+                                    <ShieldOff className="h-4 w-4 mr-2" />
+                                    Revoke Admin
+                                  </>
+                                ) : (
+                                  <>
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Make Admin
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                            {userItem.id === user?.id && (
+                              <span className="text-sm text-muted-foreground">You</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
+
+        <AlertDialog open={!!userToToggle} onOpenChange={() => setUserToToggle(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {userToToggle?.isAdmin ? 'Revoke Admin Access' : 'Grant Admin Access'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {userToToggle?.isAdmin
+                  ? `Are you sure you want to revoke admin privileges from ${userToToggle.profile?.name || 'this user'}? They will no longer be able to access the admin dashboard.`
+                  : `Are you sure you want to grant admin privileges to ${userToToggle?.profile?.name || 'this user'}? They will have full access to manage users and view all data.`
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => userToToggle && toggleAdminRole(userToToggle.id, userToToggle.isAdmin)}
+              >
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

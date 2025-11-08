@@ -1,7 +1,3 @@
-Here is a complete report-style README.md file for your GitHub repository.
-
-This is written in Markdown. You can copy and paste this text directly into a file named README.md in your project folder, and GitHub will display it beautifully.
-
 🚀 ConnectUp
 Swipe. Match. Connect. Make new friends at IIT Ropar!
 📝 Introduction

@@ -226,10 +226,13 @@ const Admin = () => {
         if (error) throw error;
         toast.success('Admin role revoked');
       } else {
-        // Add admin role
+        // Add admin role using upsert to handle duplicates
         const { error } = await supabase
           .from('user_roles')
-          .insert({ user_id: userId, role: 'admin' });
+          .upsert(
+            { user_id: userId, role: 'admin' },
+            { onConflict: 'user_id,role', ignoreDuplicates: true }
+          );
 
         if (error) throw error;
         toast.success('Admin role granted');
